@@ -36,9 +36,8 @@ namespace WindowsFormsApplication1
 
         private void runButton_Click(object sender, EventArgs e)
         {
-            System.IO.StreamReader sr = new System.IO.StreamReader(fileNameField.Text);
-            MessageBox.Show(sr.ReadToEnd());
-            sr.Close();
+            MacroAssemblerPreprocessor preprocessor = new MacroAssemblerPreprocessor(fileNameField.Text);
+            preprocessor.Run();
         }
     }
 }
