@@ -38,6 +38,7 @@ namespace WindowsFormsApplication1
         {
             MacroAssemblerPreprocessor preprocessor = new MacroAssemblerPreprocessor(fileNameField.Text);
             preprocessor.Run();
+            Application.Exit();
         }
     }
 }

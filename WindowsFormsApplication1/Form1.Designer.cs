@@ -35,6 +35,7 @@
             // 
             // openFileButton
             // 
+            this.openFileButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.openFileButton.Location = new System.Drawing.Point(12, 38);
             this.openFileButton.Name = "openFileButton";
             this.openFileButton.Size = new System.Drawing.Size(111, 23);
@@ -45,6 +46,7 @@
             // 
             // runButton
             // 
+            this.runButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.runButton.Enabled = false;
             this.runButton.Location = new System.Drawing.Point(294, 38);
             this.runButton.Name = "runButton";
@@ -56,6 +58,7 @@
             // 
             // fileNameField
             // 
+            this.fileNameField.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.fileNameField.Enabled = false;
             this.fileNameField.Location = new System.Drawing.Point(12, 12);
             this.fileNameField.Name = "fileNameField";
