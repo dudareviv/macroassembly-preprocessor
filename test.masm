@@ -1,21 +1,11 @@
-
-
-
-
-
-
-
-
-
 M1 	MACRO OP   ,   W
-	LOCAL L
-	L: OP AX,X
-	ENDM
+	OP AX,W
+	MEND
 M	MACRO X,Y,Z
 	MOV AX,X
 	M1 ADD,Y
 	MOV Z,AX
-	ENDM
+	MEND
 
 	M	Q, 50, [BX]
 	JMP	LAB

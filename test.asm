@@ -1,2 +1,4 @@
-10-11 M1: OP , W
-14-16 M: X,Y,Z
+ MOV AX,Q
+ ADD AX,50
+ MOV [BX],AX
+ JMP LAB

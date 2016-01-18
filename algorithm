@@ -1,0 +1,65 @@
+begin { макропроцессор }
+	EXPANDING:=FALSE
+	while OPCODE <> 'END' do
+	begin
+		GETLINE
+		PROCESSLINE
+	end { while }
+end { макропроцессор }
+
+procedure PROCESSLINE
+begin
+	поиск OPCODE в NAMTAB
+	if нашли then
+		EXPAND
+	else if OPCODE = 'MACRO' then
+		DEFINE
+	else 
+		записать исходную строку в файл макрорасширения
+end { PROCESSLINE }
+
+procedure DEFINE
+begin
+	записать имя макроопределения в NAMTAB
+	записать макропрототип в DEFTAB
+	LEVEL:=1
+	while LEVEL > 0 do
+	begin
+		GETLINE
+		if это не строка-комментарий then
+		begin
+			заменить имя к-го параметра на ?к
+			записать строку в DEFTAB
+			if OPCODE = 'MACRO' then
+				LEVEL := LEVEL + 1
+			else if OPCODE = 'MEND' then
+				LEVEL := LEVEL - 1
+		end { если не строка-комментарий }
+	end { while }
+	записать в NAMTAB указатели на начало и конец макроопрделения в DEFTAB
+end { DEFINE }
+
+procedure EXPAND
+begin
+	EXPANDIND := TRUE
+	взять первую строку макроопрееления из DEFTAB { зоголовок }
+	записать аргументы макроинициализации в ARGTAB
+	записать в выходной файл макровызов как комментарий
+	while не конец макроопредения do
+	begin
+		GETLINE
+		PROCESSLINE
+	end { while }
+	EXPANDING := FALSE
+end { EXPAND }
+
+procedure GETLINE
+begin
+	if EXPANDIND then
+	begin
+		прочитать следующую строку макроопределения из DEFTAB
+		заменить операнды ?к на соотв. аргументы из ARGTAB
+	end { if }
+	else
+		прочитать очередную строку входного файла
+end { GETLINE }

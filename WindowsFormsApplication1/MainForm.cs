@@ -8,11 +8,11 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace WindowsFormsApplication1
+namespace Application
 {
-    public partial class Form1 : Form
+    public partial class MainForm : Form
     {
-        public Form1()
+        public MainForm()
         {
             InitializeComponent();
         }
@@ -36,9 +36,17 @@ namespace WindowsFormsApplication1
 
         private void runButton_Click(object sender, EventArgs e)
         {
-            MacroAssemblerPreprocessor preprocessor = new MacroAssemblerPreprocessor(fileNameField.Text);
-            preprocessor.Run();
-            Application.Exit();
+            try
+            {
+                var preprocessor = new Preprocessor(fileNameField.Text);
+                preprocessor.Run();
+            }
+            catch (Exception exception)
+            {
+                MessageBox.Show(exception.Message);
+            }
+
+            System.Windows.Forms.Application.Exit();
         }
     }
 }

@@ -1,6 +1,6 @@
-﻿namespace WindowsFormsApplication1
+﻿namespace Application
 {
-    partial class Form1
+    partial class MainForm
     {
         /// <summary>
         /// Required designer variable.
@@ -65,7 +65,7 @@
             this.fileNameField.Size = new System.Drawing.Size(357, 20);
             this.fileNameField.TabIndex = 2;
             // 
-            // Form1
+            // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -73,8 +73,8 @@
             this.Controls.Add(this.fileNameField);
             this.Controls.Add(this.runButton);
             this.Controls.Add(this.openFileButton);
-            this.Name = "Form1";
-            this.Text = "Form1";
+            this.Name = "MainForm";
+            this.Text = "Макрогенератор v0.0.2";
             this.ResumeLayout(false);
             this.PerformLayout();
 
