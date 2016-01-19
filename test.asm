@@ -1,4 +1,4 @@
  MOV AX,Q
- ADD AX,50
+ ADD AX,X
  MOV [BX],AX
  JMP LAB

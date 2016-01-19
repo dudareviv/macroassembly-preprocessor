@@ -19,11 +19,6 @@ namespace Application
         private char[] commentChars = new char[] { ';', '#' };
 
         /// <summary>
-        /// Уровень вложенности
-        /// </summary>
-        private int level = 0;
-
-        /// <summary>
         /// Номер текущей строки
         /// </summary>
         private long position = 0;
