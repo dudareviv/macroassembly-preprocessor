@@ -1,0 +1,21 @@
+ENTER	MACRO	N
+start:	ld r10,N
+		ldb	a,#10
+print:	wd	#0
+		ldb	a,#13
+		wd	#0
+		incr	x,r10
+		jlt	start
+		jet test
+		jgt finish
+
+test:	ldb	a,#21
+		j	print
+
+finish: 
+		MEND
+
+
+ENTER 1
+ENTER 2
+ENTER 3

@@ -19,6 +19,11 @@ namespace Application
         private char[] commentChars = new char[] { ';', '#' };
 
         /// <summary>
+        /// Номер метки.
+        /// </summary>
+        private int labelsCount = 0;
+
+        /// <summary>
         /// Номер текущей строки
         /// </summary>
         private long position = 0;
@@ -107,20 +112,27 @@ namespace Application
             position++;
 
             line = Regex.Replace(line, @"[\t\s]+", " ");
-            line.Trim();
+            line = line.Trim();
 
             if (expandStack.Count > 0)
             {
+                string pattern;
                 var command = expandStack.Peek();
+
+                foreach (KeyValuePair<string,int> label in command.Labels)
+                {
+                    pattern = String.Format(@"\b{0}\b", label.Key);
+                    line = Regex.Replace(line, @pattern, label.Value.ToString("??0000"));
+                }
 
                 for (int j = 0; j < command.FactParams.Count; j++)
                 {
-                    string pattern = String.Format(@"\b{0}\b", command.FormalParams[j]);
+                    pattern = String.Format(@"\b{0}\b", command.FormalParams[j]);
                     line = Regex.Replace(line, @pattern, command.FactParams[j]);
                 }
             }
 
-            matches = Regex.Matches(line, @"[\w\d\[\]]+");
+            matches = Regex.Matches(line, @"[\w\d\[\]]+:?");
 
             operands.Clear();
             foreach (Match match in matches)
@@ -137,6 +149,11 @@ namespace Application
             if (!IsCorrectLine())
             {
                 return;
+            }
+
+            if (IsDefineLabel())
+            {
+                DefineLabel();
             }
 
             if (IsEndExpand())
@@ -162,29 +179,54 @@ namespace Application
         }
 
         /// <summary>
+        /// Добавляет метку в команду.
+        /// </summary>
+        private void DefineLabel()
+        {
+            defineStack.Peek().Labels[operands[0].TrimEnd(':')] = 0;
+        }
+
+        /// <summary>
+        /// Проверяет является ли первый параметр меткой.
+        /// Вернет истину, если в данный момент описывается макрос.
+        /// </summary>
+        /// <returns></returns>
+        private bool IsDefineLabel()
+        {
+            return defineStack.Count > 0 && operands[0][operands[0].Length - 1] == ':';
+        }
+
+        /// <summary>
         /// Разворачивает вызов макро команды.
         /// </summary>
         private void StartExpand()
         {
             var command = (MacroCommand)commands.Find(x => x.Name == operands[0]).Clone();
-            command.CallPosition = position;
 
-            for(int i = 1; i < operands.Count; i++)
-            {
-                command.FactParams.Add(operands[i]);
-            }
-
-            if (command.FactParams.Count != command.FormalParams.Count)
-            {
-                throw new Exception(String.Format("Неверное количество параметров на строке {0}\r\nГлубина вызова: {1}", position, expandStack.Count));
-            }
-
+            // Простая проверка на рекурсию
             foreach (MacroCommand _command in expandStack)
             {
                 if (_command.Name == command.Name)
                 {
                     throw new Exception(String.Format("Бесконечная рекурсия на строке {0}.", position));
                 }
+            }
+
+            command.CallPosition = position;
+
+            for (int i = 1; i < operands.Count; i++)
+            {
+                command.FactParams.Add(operands[i]);
+            }
+
+            for (int i = 0; i < command.Labels.Count; i++)
+            {
+                command.Labels[command.Labels.ElementAt(i).Key] = labelsCount++;
+            }
+            
+            if (command.FactParams.Count != command.FormalParams.Count)
+            {
+                throw new Exception(String.Format("Неверное количество параметров на строке {0}\r\nГлубина вызова: {1}", position, expandStack.Count));
             }
 
             SetLine(command.StartPosition);
@@ -258,7 +300,7 @@ namespace Application
         /// <returns></returns>
         private bool IsEndDefine()
         {
-            return operands.Count > 0 && operands[0] == "MEND";
+            return operands.Contains("MEND");
         }
 
         /// <summary>
@@ -295,8 +337,20 @@ namespace Application
     {
         public string Name;
 
+        /// <summary>
+        /// Формальные параметры.
+        /// </summary>
         public List<string> FormalParams = new List<string>();
+
+        /// <summary>
+        /// Фактические параметры.
+        /// </summary>
         public List<string> FactParams = new List<string>();
+
+        /// <summary>
+        /// Метки внутри макроса.
+        /// </summary>
+        public Dictionary<string, int> Labels = new Dictionary<string, int>();
 
         public long StartPosition;
         public long EndPosition;
@@ -308,6 +362,7 @@ namespace Application
             command.Name = this.Name;
             command.FormalParams = new List<string>(this.FormalParams);
             command.FactParams = new List<string>(this.FactParams);
+            command.Labels = new Dictionary<string, int>(this.Labels);
             command.StartPosition = this.StartPosition;
             command.EndPosition = this.EndPosition;
             command.CallPosition = this.CallPosition;
