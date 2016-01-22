@@ -111,6 +111,7 @@ namespace Application
 
             position++;
 
+            line = Regex.Replace(line, @"[\t\s]+=[\t\s]+", "=");
             line = Regex.Replace(line, @"[\t\s]+", " ");
             line = line.Trim();
 
@@ -119,20 +120,20 @@ namespace Application
                 string pattern;
                 var command = expandStack.Peek();
 
+                foreach (KeyValuePair<string, string> param in command.Params)
+                {
+                    pattern = String.Format(@"\b{0}\b", param.Key);
+                    line = Regex.Replace(line, @pattern, param.Value);
+                }
+
                 foreach (KeyValuePair<string,int> label in command.Labels)
                 {
                     pattern = String.Format(@"\b{0}\b", label.Key);
                     line = Regex.Replace(line, @pattern, label.Value.ToString("??0000"));
                 }
-
-                for (int j = 0; j < command.FactParams.Count; j++)
-                {
-                    pattern = String.Format(@"\b{0}\b", command.FormalParams[j]);
-                    line = Regex.Replace(line, @pattern, command.FactParams[j]);
-                }
             }
 
-            matches = Regex.Matches(line, @"[\w\d\[\]]+:?");
+            matches = Regex.Matches(line, @"[\w\d\[\]=]+:?");
 
             operands.Clear();
             foreach (Match match in matches)
@@ -214,19 +215,21 @@ namespace Application
 
             command.CallPosition = position;
 
+            // Устанавливаем значения параметрам МК
             for (int i = 1; i < operands.Count; i++)
             {
-                command.FactParams.Add(operands[i]);
+                command.Params[command.Params.ElementAt(i - 1).Key] = operands[i];
+            }
+
+            // Если остались пустые параметры -- бросаем исключение
+            if (command.Params.ContainsValue(null))
+            {
+                throw new Exception(String.Format("Неверное количество параметров на строке {0}\r\nГлубина вызова: {1}", position, expandStack.Count));
             }
 
             for (int i = 0; i < command.Labels.Count; i++)
             {
                 command.Labels[command.Labels.ElementAt(i).Key] = labelsCount++;
-            }
-            
-            if (command.FactParams.Count != command.FormalParams.Count)
-            {
-                throw new Exception(String.Format("Неверное количество параметров на строке {0}\r\nГлубина вызова: {1}", position, expandStack.Count));
             }
 
             SetLine(command.StartPosition);
@@ -251,9 +254,15 @@ namespace Application
             command.StartPosition = position + 1;
             command.Name = operands[0];
 
-            for(int i = 2; i < operands.Count; i++)
+            for (int i = 2; i < operands.Count; i++)
             {
-                command.FormalParams.Add(operands[i]);
+                if (operands[i].Contains('='))
+                {
+                    var keyValue = operands[i].Split('=');
+                    command.Params[keyValue[0]] = keyValue[1];
+                }
+                else
+                    command.Params[operands[i]] = null;
             }
 
             defineStack.Push(command);
@@ -338,17 +347,12 @@ namespace Application
         public string Name;
 
         /// <summary>
-        /// Формальные параметры.
+        /// Словарь параметров.
         /// </summary>
-        public List<string> FormalParams = new List<string>();
+        public Dictionary<string, string> Params = new Dictionary<string, string>();
 
         /// <summary>
-        /// Фактические параметры.
-        /// </summary>
-        public List<string> FactParams = new List<string>();
-
-        /// <summary>
-        /// Метки внутри макроса.
+        /// Словарь меток.
         /// </summary>
         public Dictionary<string, int> Labels = new Dictionary<string, int>();
 
@@ -360,8 +364,7 @@ namespace Application
         {
             var command = new MacroCommand();
             command.Name = this.Name;
-            command.FormalParams = new List<string>(this.FormalParams);
-            command.FactParams = new List<string>(this.FactParams);
+            command.Params = new Dictionary<string, string>(this.Params);
             command.Labels = new Dictionary<string, int>(this.Labels);
             command.StartPosition = this.StartPosition;
             command.EndPosition = this.EndPosition;

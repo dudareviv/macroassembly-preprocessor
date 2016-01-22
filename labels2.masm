@@ -1,4 +1,4 @@
-ENTER	MACRO	N
+ENTER	MACRO	N = 	99
 start:	ld r10,N
 		ldb	a,#10
 print:	wd	#0
@@ -16,6 +16,6 @@ finish:
 		MEND
 
 
-ENTER 1
-ENTER 2
-ENTER 3
+ENTER
+ENTER 22
+ENTER 11
